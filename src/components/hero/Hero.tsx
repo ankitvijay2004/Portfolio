@@ -1,6 +1,8 @@
 import Socials from "../socials/Socials";
-import { useContext, useMemo } from "react";
-import Particles from "@tsparticles/react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import Particles, { initParticlesEngine } from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { ISourceOptions } from "@tsparticles/engine";
 import { ThemeContext } from "../../App";
 import { RightArrowIcon } from "../../assets/icons/icons";
 import { useReducedMotion } from "framer-motion";
@@ -12,8 +14,17 @@ const Hero: React.FunctionComponent<HeroProps> = () => {
   const isCompact = useMatchMedia("(max-width: 820px)");
   const prefersReducedMotion = useReducedMotion();
   const theme = useContext(ThemeContext);
+  const [particlesReady, setParticlesReady] = useState(false);
 
-  const particleOptions = useMemo(
+  useEffect(() => {
+    void initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => {
+      setParticlesReady(true);
+    });
+  }, []);
+
+  const particleOptions = useMemo<ISourceOptions>(
     () => ({
       fpsLimit: prefersReducedMotion ? 30 : 60,
       fullScreen: { enable: false },
@@ -88,7 +99,9 @@ const Hero: React.FunctionComponent<HeroProps> = () => {
 
   return (
     <div className="hero-container">
-      <Particles id="tsparticles" options={particleOptions} />
+      {particlesReady ? (
+        <Particles id="tsparticles" options={particleOptions} />
+      ) : null}
 
       <div className={theme.isDarkmode ? "heroContainerDark" : "heroContainer"}>
         <div className="heroWrapper">
